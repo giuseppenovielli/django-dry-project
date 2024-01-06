@@ -1,2 +1,2 @@
-# django_dry_project
+# Django DRY Project
 A Django project with samples code strictly DRY (DON'T REPEAT YOURSELF)
