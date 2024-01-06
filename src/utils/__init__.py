@@ -1,0 +1,1 @@
+#https://stackoverflow.com/questions/51165037/django-where-to-store-functions-common-to-all-apps
