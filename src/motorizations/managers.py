@@ -11,26 +11,42 @@ class Engine_QuerySet(models.QuerySet):
         return self.filter(name=name)
     
     
-    def user(self, user):
+    #Car_user
+    def car__car_user__user(self, user):
         """
         Get records with user
         """
         from .models import Car
         
         return self.filter(id__in=Subquery(
-                Car.objects.user(user).values('engine_id')
+                Car.objects.car_user__user(user).values('engine_id')
             )
         )
         
         
-    def number_plate__contains(self, number_plate):
+    def car__car_user__number_plate__contains(self, number_plate):
         """
         Get records with user
         """
         from .models import Car
         
         return self.filter(id__in=Subquery(
-                Car.objects.number_plate__contains(number_plate).values('engine_id')
+                Car.objects.car_user__number_plate__contains(number_plate).values('engine_id')
+            )
+        )
+        
+    
+    def or__car__car_user__number_plate__contains(self, number_plate):
+        """
+        Get records with user
+        """
+        from .models import Engine, Car
+        
+        return self.filter(
+            Q(
+                Q(id__in=Subquery(Engine.objects.values('id')))
+                |
+                Q(id__in=Subquery(Car.objects.car_user__number_plate__contains(number_plate).values('engine_id')))
             )
         )
     
@@ -52,7 +68,7 @@ class Car_QuerySet(models.QuerySet):
     
     
     #Car_user
-    def user(self, user):
+    def car_user__user(self, user):
         """
         Get records with user
         """
@@ -64,9 +80,9 @@ class Car_QuerySet(models.QuerySet):
         )
         
         
-    def number_plate__contains(self, number_plate):
+    def car_user__number_plate__contains(self, number_plate):
         """
-        Get records with user
+        Get records with number plate contains
         """
         from .models import Car_user
         
@@ -109,7 +125,7 @@ class Car_user_QuerySet(models.QuerySet):
     #
     
     #ACCESS TO RELATED FILEDS
-    def engine(self, engine):
+    def car__engine(self, engine):
         """
         Get records with engine
         """
