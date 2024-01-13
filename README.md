@@ -16,7 +16,7 @@ CRUD are operations that most project implements.
 + #### UPDATE (TODO)
 + #### DELETE (TODO)
 ---
-### Utils method
+### Utils
 [Utils](https://github.com/giuseppenovielli/django_dry_project/tree/main/src/utils) folder can be used to store utils method/class
 + Create for each plugin utils file
 ---
