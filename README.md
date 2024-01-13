@@ -18,7 +18,7 @@ CRUD are operations that most project implements.
 ---
 ### Utils
 [Utils](https://github.com/giuseppenovielli/django_dry_project/tree/main/src/utils) folder can be used to store utils method/class
-+ Create for each plugin utils file
++ Create for each plugin, one utils file
 ---
 ### Pagination
 [Client_PageNumberPagination](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/rest_framework.py) class can be used to enable client custom pagination size.
