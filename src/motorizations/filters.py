@@ -20,10 +20,6 @@ class Engine_Filter(filters.FilterSet):
 
     def car__car_user__number_plate__contains_filter(self, queryset, name, value):
         return queryset.car__car_user__number_plate__contains(value)
-    
-    #OR
-    def or__car__car_user__number_plate__contains_filter(self, queryset, name, value):
-        return queryset.or__car__car_user__number_plate__contains(value)
 
     @property
     def qs(self):

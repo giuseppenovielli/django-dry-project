@@ -11,10 +11,4 @@ class User(AbstractUser):
     #UserManager inheritance from BaseUserManager (django package) a it is a models.Manager
     #models.Manager NOT DRY WHEN ADD CUSTOM QUERIES (DUPLICATE SAME METHODS) -> https://docs.djangoproject.com/en/3.2/topics/db/managers/#calling-custom-queryset-methods-from-the-manager 
     
-    #SO CREATE DIFFERENT MANAGER
-    
-    #Use this manager to create, delete, update
-    manage = UserManager()
-    
-    #Use this manager to get (query)
-    objects = User_QuerySet.as_manager()
+    objects = UserManager()

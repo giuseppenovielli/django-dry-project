@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import models
 from django.db.models import Q, OuterRef, Subquery
 
@@ -35,20 +36,6 @@ class Engine_QuerySet(models.QuerySet):
             )
         )
         
-    
-    def or__car__car_user__number_plate__contains(self, number_plate):
-        """
-        Get records with user
-        """
-        from .models import Engine, Car
-        
-        return self.filter(
-            Q(
-                Q(id__in=Subquery(Engine.objects.values('id')))
-                |
-                Q(id__in=Subquery(Car.objects.car_user__number_plate__contains(number_plate).values('engine_id')))
-            )
-        )
     
     
 class Car_QuerySet(models.QuerySet):

@@ -109,3 +109,5 @@ class UserManager(BaseUserManager):
             raise ValueError(_("Superuser must have is_superuser=True."))
         return self.create_user(email, password, **extra_fields)
     
+    def get_queryset(self):
+        return User_QuerySet(model=self.model, using=self._db, hints=self._hints)

@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     #external
     'rest_framework',
     'django_filters',
+    'django_fullclean',
+    'import_export',
     #local
     'users',
     'motorizations'
@@ -135,8 +137,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated', ),
-    'DEFAULT_PAGINATION_CLASS': 'utils.rest_framework.Client_PageNumberPagination',
-    'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer','utils.rest_framework.Debug_BrowsableAPIRenderer',),
+    'DEFAULT_PAGINATION_CLASS': 'utils.rest_framework.pagination.Client_PageNumberPagination',
+    'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer','utils.rest_framework.renderers.Debug_BrowsableAPIRenderer',),
+    'EXCEPTION_HANDLER': 'utils.rest_framework.exceptions.django_error_handler'
 }
 
 AUTH_USER_MODEL = 'users.User' #
