@@ -31,7 +31,7 @@ CRUD are operations that most project implements.
   + Validations Model layer
     + Write Validations logic into [Model.clean()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/models.py#L102) that check model fields data integrity.
     If call Model.save() from Model.Form, Model.Serializer, ModelAdmin object MUST BE validated before saved into db.
-    + Warnings
+    + **Warnings**
       + [pre_save_full_clean_handler](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/django/signals.py#L7) model.full_clean() is not called by default when invoke Model.save() method [ISSUE](https://stackoverflow.com/questions/4441539/why-doesnt-djangos-model-save-call-full-clean)
       + [django_error_handler](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/rest_framework/exceptions.py#L8C5-L8C25) Improve conversion from exceptions.ValidationError() to serializer.ValidationError()
   + Validations View layer
@@ -42,7 +42,7 @@ CRUD are operations that most project implements.
     + [Multiple Models](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L69)
 
 + #### UPDATE
-  + Warnings
+  + **Warnings**
     + [UpdateModelQuerySet](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/managers.py#L82) Add this Mixing for prevent update not call Model.save() method. [Unfortunately, there isn’t a workaround when creating or updating objects in bulk, since none of save(), pre_save, and post_save are called.](https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods)
 
 + #### DELETE
