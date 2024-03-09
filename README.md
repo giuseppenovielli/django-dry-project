@@ -29,6 +29,7 @@ CRUD are operations that most project implements.
     If call Model.save() from Model.Form, Model.Serializer, ModelAdmin object MUST BE validated before saved into db.
     + Warnings
       + [pre_save_full_clean_handler](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/django/signals.py#L7) model.full_clean() is not called by default when invoke Model.save() method [ISSUE](https://stackoverflow.com/questions/4441539/why-doesnt-djangos-model-save-call-full-clean)
+      + [django_error_handler](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/rest_framework/exceptions.py#L8C5-L8C25) Improve conversion from exceptions.ValidationError() to serializer.ValidationError()
   + Validations View layer
     + Write Validations logic into [ModelSerializer.validate() and ModelForms.clean() YES NOT DRY 😅](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/serializers.py#L51) that check model fields data integrity using view parameters as request, that aren't accessible into Model class.
   + Single row
