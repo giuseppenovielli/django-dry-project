@@ -31,7 +31,7 @@ CRUD are operations that most project implements.
   + Validations Model layer
     + Write Validations logic into [signals.pre_delete](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/signals.py#L10)
   + Validations View layer
-    + Write Validations logic into [signals.pre_delete](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/signals.py#L10) that check model fields data integrity using view parameters as request, that aren't accessible into Model/Signal class.
+    + Write Validations logic into [viewsets.destroy()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L73) that check model fields data integrity using view parameters as request, that aren't accessible into Model/Signal class.
 ---
 ### Utils
 [Utils](https://github.com/giuseppenovielli/django_dry_project/tree/main/src/utils) folder can be used to store utils method/class
