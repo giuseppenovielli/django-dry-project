@@ -12,9 +12,26 @@ CRUD are operations that most project implements.
     + [Django Filter](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/filters.py)
     + [Manager Query Engine (Experimental)](https://github.com/giuseppenovielli/django_dry_project/wiki/Manger-Query-Engine-%5BExperimental%5D)
 
-+ #### CREATE (TODO)
-+ #### UPDATE (TODO)
-+ #### DELETE (TODO)
++ #### CREATE/UPDATE
+  + Validations Model layer
+    + Write Validations logic into [Model.clean()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/models.py#L102) that check model fields data integrity.
+    If call Model.save() from Model.Form, Model.Serializer, ModelAdmin object MUST BE validated before saved into db.
+  + Validations View layer
+    + Write Validations logic into [ModelSerializer.validate() and ModelForms.clean()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/serializers.py#L51) that check model fields data integrity using view parameters as request, that aren't accessible into Model class.
+  + Single row
+    + [Model](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L69)
+  + Nested ForeignKey
+    + [Multiple Models](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L69)
+
++ #### UPDATE
+  + Warnings
+    + [UpdateModelQuerySet](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/managers.py#L82) Add this Mixing for prevent update not call Model.save() method.
+
++ #### DELETE
+  + Validations Model layer
+    + Write Validations logic into [signals.pre_delete](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/signals.py#L10)
+  + Validations View layer
+    + Write Validations logic into [signals.pre_delete](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/signals.py#L10) that check model fields data integrity using view parameters as request, that aren't accessible into Model/Signal class.
 ---
 ### Utils
 [Utils](https://github.com/giuseppenovielli/django_dry_project/tree/main/src/utils) folder can be used to store utils method/class
