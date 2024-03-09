@@ -45,13 +45,13 @@ class CarUserSerializer(ValidateModelSerializer, serializers.ModelSerializer):
         representation['car'] = CarSerializer(instance.car, context=self.context).data
         representation['user'] = UserSerializer(instance.user, context=self.context).data
         return representation
-
-
-    
+      
     def validate(self, attrs):
         """
         https://www.django-rest-framework.org/api-guide/serializers/#object-level-validation
         The main validations for object CarUser is stored into models class, ONE PLACE (DRY)
+        
+        https://docs.djangoproject.com/en/3.2/topics/class-based-views/generic-editing/#models-and-request-user
         """
         request = self.context['request']
         

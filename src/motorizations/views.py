@@ -44,7 +44,8 @@ class CarViewSet(viewsets.ModelViewSet):
         
         
     def create(self, request, *args, **kwargs):
-        """Test with POSTMAN
+        """
+        Test with POSTMAN
 
         curl --location 'http://127.0.0.1:8000/motorizations/api/cars/?writable_car_user=true' \
 --header 'Authorization: Token be4126fdd668feda4c4a4c9b7761d5af15c1dee3' \
@@ -68,6 +69,10 @@ class CarViewSet(viewsets.ModelViewSet):
             return self._writable_many_car_user(request)
         return super().create(request, *args, **kwargs)
     
+    
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+        
     
 class CarUserViewSet(viewsets.ModelViewSet):
     serializer_class = CarUserSerializer

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError, FieldDoesNotExist
 
 class ValidateModelSerializer:
     """
@@ -53,9 +53,14 @@ class ValidateModelSerializer:
                 if field.name not in validated_data:
                     continue
                 setattr(instance, field.name, validated_data[field.name])
-            return instance
         except:
-            pass
+            return
+        
+        #Add fields value that are not in validated_data
+        if kwargs:
+            for key,value in kwargs.items():
+                setattr(instance, key, value)
+        return instance
         
     
     #
@@ -66,12 +71,15 @@ class ValidateModelSerializer:
         
         if kwargs:
             for key,value in kwargs.items():
-                exclude.append(key)
-                field = object._meta.get_field(key)
-                print(field)
-                if field.is_relation and bool(field.validators):
-                    raise Exception('Unsupported validation! Field {} is a relation that contains validators that needs the database id. Try to move validations\'s logic into clean() method, but analize object\'s fields instead make a query to the database, that validators need'.format(key))
-
+                try:
+                    field = object._meta.get_field(key)
+                    exclude.append(key)
+                    print(field)
+                    if field.is_relation and bool(field.validators):
+                        raise Exception('Unsupported validation! Field {} is a relation that contains validators that needs the database id. Try to move validations\'s logic into clean() method, but analize object\'s fields instead make a query to the database, that validators need'.format(key))
+                except FieldDoesNotExist:
+                    pass
+                
         object.full_clean(exclude=exclude)
         
         

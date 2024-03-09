@@ -13,6 +13,7 @@ class UpdateModelQuerySet():
     
     def update(self, **kwargs):
         """
+        Unfortunately, there isn’t a workaround when creating or updating objects in bulk, since none of save(), pre_save, and post_save are called.
         https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
         WORKAROUND -> Call save() method
         """

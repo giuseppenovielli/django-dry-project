@@ -16,5 +16,4 @@ def car_user_pre_delete(sender, instance, **kwargs):
     
     get user_logged_in -> https://stackoverflow.com/questions/4721771/get-current-user-log-in-signal-in-django NOT ADVISED
     """
-    return
     raise ValidationError(_('This object can\'t be deleted'))
