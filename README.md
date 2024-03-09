@@ -5,6 +5,17 @@ A Django project with samples code strictly DRY (DON'T REPEAT YOURSELF)
 ### CRUD (Create Retrieve Update Delete)
 CRUD are operations that most project implements.
 [Django Rest Framework](https://www.django-rest-framework.org/) can be used for this purpose, to develop Rest API Endpoint.
+
++ #### API with a Model
+  + [viewsets.ModelViewSet](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L19) Use this class if you want enable to consume all CRUD operations
+  + [viewsets.GenericViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#custom-viewset-base-classes) Use these classes to enable only some CRUD operations.
+ 
++ #### API without a Model
+  + [viewsets.ViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#viewset-actions) Use this class if you want enable to consume all CRUD operations
+    
++ #### API with ExtraActions
+  + [decorators.action](https://www.django-rest-framework.org/api-guide/viewsets/#marking-extra-actions-for-routing)
+    
 + #### RETRIEVE
   + Simple queries
     + [Search](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/users/views.py#L30)
