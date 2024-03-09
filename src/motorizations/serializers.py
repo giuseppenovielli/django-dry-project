@@ -1,34 +1,37 @@
 from rest_framework import serializers
 from django.utils import timezone
 
+from drf_writable_nested.serializers import WritableNestedModelSerializer
+
 from users.serializers import UserSerializer
 from utils.rest_framework.serializers import ValidateModelSerializer
 
-from .models import Engine, Car, Car_user
+from .models import Engine, Car, CarUser
 
-class Engine_Serializer(serializers.ModelSerializer): 
+class EngineSerializer(serializers.ModelSerializer): 
     class Meta:
         model = Engine
         fields = '__all__'
-        
-
-class Car_Serializer(serializers.ModelSerializer): 
+    
+    
+#Car
+class CarSerializer(ValidateModelSerializer, serializers.ModelSerializer): 
     class Meta:
         model = Car
         fields = '__all__'
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['engine'] = Engine_Serializer(instance.engine).data
+        representation['engine'] = EngineSerializer(instance.engine).data
         return representation
     
-        
 
-class Car_user_Serializer(ValidateModelSerializer, serializers.ModelSerializer):
-    
+#CarUser
+class CarUserSerializer(ValidateModelSerializer, serializers.ModelSerializer):
+        
     class Meta:
-        model = Car_user
-        fields = '__all__'
+        model = CarUser
+        fields = ('id', 'user', 'car', 'number_plate',)
         #https://www.django-rest-framework.org/api-guide/serializers/#specifying-read-only-fields
         read_only_fields = ['user_created', 'datetime_created']
       
@@ -39,7 +42,7 @@ class Car_user_Serializer(ValidateModelSerializer, serializers.ModelSerializer):
         If you want to change the output, when this serializer is used also for POST, PATCH or PUT, you can override the to_representation function.
         """
         representation = super().to_representation(instance)
-        representation['car'] = Car_Serializer(instance.car, context=self.context).data
+        representation['car'] = CarSerializer(instance.car, context=self.context).data
         representation['user'] = UserSerializer(instance.user, context=self.context).data
         return representation
 
@@ -48,7 +51,7 @@ class Car_user_Serializer(ValidateModelSerializer, serializers.ModelSerializer):
     def validate(self, attrs):
         """
         https://www.django-rest-framework.org/api-guide/serializers/#object-level-validation
-        The main validations for object Car_user is stored into models class, ONE PLACE (DRY)
+        The main validations for object CarUser is stored into models class, ONE PLACE (DRY)
         """
         request = self.context['request']
         
@@ -57,4 +60,37 @@ class Car_user_Serializer(ValidateModelSerializer, serializers.ModelSerializer):
         attrs['datetime_created'] = timezone.now()
         return super().validate(attrs)
     
+    
+class CarUserExcludeCarSerializer(CarUserSerializer):
+        
+    class Meta(CarUserSerializer.Meta):
+        fields = ('user', 'number_plate',)
+      
+
+#
+
+#WRITEBLE NESTED SERIALIZER
+class Engine_writable_nested_Serializer(WritableNestedModelSerializer): 
+    class Meta:
+        model = Engine
+        fields = ['pk', 'name']
+        
+
+class Car_writable_nested_Serializer(WritableNestedModelSerializer): 
+    #engine = Engine_writable_nested_Serializer()
+    car_user = CarUserSerializer(many=True)
+
+    class Meta:
+        model = Car
+        fields = ('id', 'name', 'engine', 'car_user',)
+
+
+class Car_user_writable_nested_Serializer(WritableNestedModelSerializer):
+    car = Car_writable_nested_Serializer()
+    
+    class Meta:
+        model = CarUser
+        fields = ['id', 'user', 'number_plate']
+        
+      
     

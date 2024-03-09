@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
@@ -10,6 +10,6 @@ def django_error_handler(exc, context):
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
-    if response is None and isinstance(exc, ValidationError):
+    if response is None and isinstance(exc, DjangoValidationError):
         response = Response(status=400, data=as_serializer_error(exc))
     return response

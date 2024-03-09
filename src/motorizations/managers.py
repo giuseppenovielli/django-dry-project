@@ -1,9 +1,10 @@
-from typing import Any
 from django.db import models
 from django.db.models import Q, OuterRef, Subquery
 
+from utils.django.managers import UpdateModelQuerySet
 
-class Engine_QuerySet(models.QuerySet):
+
+class EngineQuerySet(models.QuerySet):
     
     def name(self, name):
         """
@@ -37,8 +38,7 @@ class Engine_QuerySet(models.QuerySet):
         )
         
     
-    
-class Car_QuerySet(models.QuerySet):
+class CarQuerySet(models.QuerySet):
     
     def name(self, name):
         """
@@ -79,7 +79,7 @@ class Car_QuerySet(models.QuerySet):
         )
     
     
-class Car_user_QuerySet(models.QuerySet):
+class CarUserQuerySet(UpdateModelQuerySet, models.QuerySet):
     
     #TABLE FIELDS
     def number_plate(self, number_plate):
