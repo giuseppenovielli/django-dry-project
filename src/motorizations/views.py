@@ -44,8 +44,8 @@ class CarViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
     
     def get_serializer_class(self):
-        return CarSerializer
-        #return Car_CarUserWritableNestedSerializer
+        #return CarSerializer
+        return Car_CarUserWritableNestedSerializer
       
     
 class CarUserViewSet(viewsets.ModelViewSet):

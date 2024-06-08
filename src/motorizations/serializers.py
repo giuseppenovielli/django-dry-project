@@ -68,7 +68,7 @@ class CarSerializer(ValidateModelSerializer, serializers.ModelSerializer):
    
    
 #CarUser
-class CarUserSerializer(ValidateModelSerializer, serializers.ModelSerializer):
+class CarUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CarUser
