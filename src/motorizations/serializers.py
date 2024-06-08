@@ -153,52 +153,23 @@ class Engine_writable_nested_Serializer(WritableNestedModelSerializer):
 
 class Car_CarUserWritableNestedSerializer(WritableNestedModelSerializer):
     """
-    Internal Server Error: /motorizations/api/cars/
 Traceback (most recent call last):
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
-    response = get_response(request)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
-    return view_func(*args, **kwargs)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/viewsets.py", line 125, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/hrcoffee6/django_dry_project/src/motorizations/views.py", line 44, in create
-    return super().create(request, *args, **kwargs)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/mixins.py", line 19, in create
-    self.perform_create(serializer)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/mixins.py", line 24, in perform_create
-    serializer.save()
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 234, in save
-    return super(BaseNestedModelSerializer, self).save(**kwargs)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/serializers.py", line 212, in save
-    self.instance = self.create(validated_data)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 262, in create
-    self.update_or_create_reverse_relations(instance, reverse_relations)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 166, in update_or_create_reverse_relations
-    instances = self._prefetch_related_instances(field, related_data)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 128, in _prefetch_related_instances
-    pk_list = self._extract_related_pks(field, related_data)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 120, in _extract_related_pks
-    pk = self._get_related_pk(d, model_class)
-  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/drf_writable_nested/mixins.py", line 109, in _get_related_pk
-    pk = data.get('pk') or data.get(model_class._meta.pk.attname)
-AttributeError: 'str' object has no attribute 'get'
+  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/db/models/query.py", line 451, in create
+    obj = self.model(**kwargs)
+  File "/Users/hrcoffee6/my_venv/django_3/lib/python3.9/site-packages/django/db/models/base.py", line 503, in __init__
+    raise TypeError("%s() got an unexpected keyword argument '%s'" % (cls.__name__, kwarg))
+TypeError: Car() got an unexpected keyword argument 'car_users'
     """
     #engine = Engine_writable_nested_Serializer()
-    car_user = CarUser_CarExcluded_Serializer()
+    car_users = CarUser_CarExcluded_Serializer(many=True)
 
     class Meta:
         model = Car
-        fields = ('pk', 'name', 'engine', 'car_user',)
+        fields = ('pk', 'name', 'engine', 'car_users',)
 
 
 
