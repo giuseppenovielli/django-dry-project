@@ -29,7 +29,7 @@ class CarViewSet(viewsets.ModelViewSet):
 --data '{
     "name": "advanced-electric",
     "engine": "1",
-    "car_user": [
+    "car_users": [
         {
             "user": 1,
             "number_plate": "admin123"
