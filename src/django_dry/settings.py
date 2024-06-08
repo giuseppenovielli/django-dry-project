@@ -41,13 +41,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #rest_framework
     'rest_framework',
+    'djoser',
     'rest_framework.authtoken',
     #third-part
     'django_filters',
     'import_export',
     #local
     'users',
-    'motorizations'
+    'motorizations',
+    
+    
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
