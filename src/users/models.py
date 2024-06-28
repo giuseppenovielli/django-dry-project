@@ -4,6 +4,9 @@ from .managers import User_QuerySet, UserManager
 
 class User(AbstractUser):
     
+    class Meta(AbstractUser.Meta):
+        ordering = ['-id']
+    
     def __str__(self):
         return self.email
     
@@ -11,4 +14,4 @@ class User(AbstractUser):
     #UserManager inheritance from BaseUserManager (django package) a it is a models.Manager
     #models.Manager NOT DRY WHEN ADD CUSTOM QUERIES (DUPLICATE SAME METHODS) -> https://docs.djangoproject.com/en/3.2/topics/db/managers/#calling-custom-queryset-methods-from-the-manager 
     
-    objects = UserManager()
+    objects = UserManager().from_queryset(User_QuerySet)()

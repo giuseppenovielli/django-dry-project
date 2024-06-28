@@ -40,6 +40,13 @@ class User_QuerySet(models.QuerySet):
         """
         return self.filter(is_active=is_active)
     
+    
+    def is_superuser(self, is_superuser):
+        """
+        Get records with is_superuser
+        """
+        return self.filter(is_superuser=is_superuser)
+    
 
     #motorizations
     def motorizations___car_user__in(self):
@@ -108,6 +115,3 @@ class UserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
         return self.create_user(email, password, **extra_fields)
-    
-    def get_queryset(self):
-        return User_QuerySet(model=self.model, using=self._db, hints=self._hints)

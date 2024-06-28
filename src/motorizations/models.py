@@ -60,12 +60,15 @@ class CarUser(models.Model):
                                     )
     
     user_created = models.ForeignKey(User, on_delete=models.CASCADE, 
-                                     verbose_name='User', 
+                                     verbose_name='User created', 
                                      related_name='car_user_created', 
                                      validators=[user_write_authorization_validator, user_is_active_validator])
     datetime_created = models.DateTimeField(default=timezone.now, verbose_name='Datetime')
     
-    objects = CarUserQuerySet.as_manager()
+    #https://docs.djangoproject.com/en/3.2/topics/db/managers/#from-queryset
+    objects = CarUserManager()
+    superuser_objects = CarUserSuperUserManager()
+    exclude_superuser_objects = CarUserExcludeSuperUserManager()
 
     class Meta:
         ordering = ['-id']
