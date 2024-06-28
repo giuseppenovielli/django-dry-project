@@ -11,7 +11,7 @@ from utils.django.validators import user_is_active_validator
 
 from .validators import user_write_authorization_validator
 
-from .managers import *
+from .managers import CarManager, CarUserExcludeSuperUserManager, CarUserManager, CarUserSuperUserManager, EngineManager
 
 User = get_user_model()
 
@@ -26,7 +26,7 @@ User = get_user_model()
 class Engine(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name')
 
-    objects = EngineQuerySet.as_manager()
+    objects = EngineManager()
 
     class Meta:
         ordering = ['-id']
@@ -40,7 +40,7 @@ class Car(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name', validators=[MinLengthValidator(10)])
     engine = models.ForeignKey(Engine, on_delete=models.CASCADE, verbose_name='Engine')
 
-    objects = CarQuerySet.as_manager()
+    objects = CarManager()
     
     class Meta:
         ordering = ['-id']
