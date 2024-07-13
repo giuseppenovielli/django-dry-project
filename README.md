@@ -25,11 +25,11 @@ CRUD are operations that most project implements.
     + [Search](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/users/views.py#L30)
   + Advanced queries
     + [Django Filter](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/filters.py)
-    + [Manager Query Engine (Experimental)](https://github.com/giuseppenovielli/django_dry_project/wiki/Manger-Query-Engine-%5BExperimental%5D)
+    + [Query DRY Engine (Experimental)](https://github.com/giuseppenovielli/django-dry-project/wiki/Query-DRY-Engine-%5BExperimental%5D)
 
 + #### CREATE/UPDATE
   + Validations Model layer
-    + Write Validations logic into [Model.clean()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/models.py#L102) that check model fields data integrity.
+    + Write Validations logic into [Model.clean()](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/models.py#L105) that check model fields data integrity.
     If call Model.save() from Model.Form, Model.Serializer, ModelAdmin object MUST BE validated before saved into db.
     + **Warnings**
       + [pre_save_full_clean_handler](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/utils/django/signals.py#L7) model.full_clean() is not called by default when invoke Model.save() method [ISSUE](https://stackoverflow.com/questions/4441539/why-doesnt-djangos-model-save-call-full-clean)
@@ -37,19 +37,19 @@ CRUD are operations that most project implements.
   + Validations View layer
     + Write Validations logic into [ModelSerializer.validate() and ModelForms.clean() YES NOT DRY 😅](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/serializers.py#L51) that check model fields data integrity using view parameters as request, that aren't accessible into Model class.
   + Single row
-    + [Model](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L69)
+    + [Model](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L61)
   + Nested ForeignKey
-    + [Multiple Models](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L69)
+    + [Multiple Models](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L59)
 
 + #### UPDATE
   + **Warnings**
-    + [UpdateModelQuerySet](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/managers.py#L82) Add this Mixing for prevent update not call Model.save() method. [Unfortunately, there isn’t a workaround when creating or updating objects in bulk, since none of save(), pre_save, and post_save are called.](https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods)
+    + [UpdateModelQuerySet](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/querysets.py#L78) Add this Mixing for prevent update not call Model.save() method. [Unfortunately, there isn’t a workaround when creating or updating objects in bulk, since none of save(), pre_save, and post_save are called.](https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods)
 
 + #### DELETE
   + Validations Model layer
     + Write Validations logic into [signals.pre_delete](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/signals.py#L10)
   + Validations View layer
-    + Write Validations logic into [viewsets.destroy() YES NOT DRY 😅](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L73) that check model fields data integrity using view parameters as request, that aren't accessible into Model/Signal class.
+    + Write Validations logic into [viewsets.destroy() YES NOT DRY 😅](https://github.com/giuseppenovielli/django_dry_project/blob/main/src/motorizations/views.py#L83) that check model fields data integrity using view parameters as request, that aren't accessible into Model/Signal class.
 ---
 ### Utils
 [Utils](https://github.com/giuseppenovielli/django_dry_project/tree/main/src/utils) folder can be used to store utils method/class
