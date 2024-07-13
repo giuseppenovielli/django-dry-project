@@ -4,6 +4,8 @@ from django.db.models import Q, OuterRef, Subquery
 
 from utils.django.managers import UpdateModelQuerySet
 
+from users.models import User
+
 #https://groups.google.com/g/django-users/c/ZWgYMHnTs7M
 from . import models as app_models
 
@@ -113,7 +115,7 @@ class CarUserQuerySet(UpdateModelQuerySet, models.QuerySet):
         Get records with engine
         """  
         return self.filter(car_id__in=Subquery(
-                app_models.objects.engine(engine).values('id')
+                app_models.Engine.objects.engine(engine).values('id')
             )
         )
         
@@ -123,7 +125,7 @@ class CarUserQuerySet(UpdateModelQuerySet, models.QuerySet):
         Get records with user__email
         """
         return self.filter(user_id__in=Subquery(
-                app_models.objects.email(email).values('id')
+                User.objects.email(email).values('id')
             )
         )
         
@@ -133,6 +135,6 @@ class CarUserQuerySet(UpdateModelQuerySet, models.QuerySet):
         Get records with user is_superuser
         """
         return self.filter(user_id__in=Subquery(
-                app_models.objects.is_superuser(is_superuser).values('id')
+                User.objects.is_superuser(is_superuser).values('id')
             )
         )
