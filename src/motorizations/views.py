@@ -3,7 +3,7 @@ from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Engine, Car, CarUser
-from .serializers import Car_CarUserWritableNestedSerializer, CarUser_CarNested_Serializer, CarUser_WritableNestedSerializer, EngineSerializer, CarSerializer, CarUserSerializer
+from .serializers import Car_CarUserWritableNestedSerializer, CarUser_CarNested_Serializer, CarUser_WritableNestedSerializer, CarUserValidateModelSerializer, EngineSerializer, CarSerializer, CarUserSerializer
 from .filters import EngineFilter, CarFilter
 
 class EngineViewSet(viewsets.ModelViewSet):
@@ -58,12 +58,12 @@ class CarUserViewSet(viewsets.ModelViewSet):
         if car and isinstance(car, dict):
             return CarUser_CarNested_Serializer
             #return CarUser_WritableNestedSerializer
-        return CarUserSerializer
+        return CarUserValidateModelSerializer
     
     
     def create(self, request, *args, **kwargs):
         """
-        Test with POSTMAN
+        Test CarUser_CarNested_Serializer with POSTMAN
 
         curl --location 'http://127.0.0.1:8000/motorizations/api/cars-users/' \
 --header 'Authorization: Token be4126fdd668feda4c4a4c9b7761d5af15c1dee3' \

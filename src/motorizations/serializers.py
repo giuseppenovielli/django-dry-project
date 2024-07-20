@@ -4,7 +4,7 @@ from django.utils import timezone
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 
 from users.serializers import UserSerializer
-from utils.rest_framework.serializers import ValidateModelSerializer
+from utils.rest_framework.serializers import NestedValidateModelSerializer, ValidateModelSerializer
 
 from .models import Engine, Car, CarUser
 
@@ -68,7 +68,7 @@ class CarSerializer(ValidateModelSerializer, serializers.ModelSerializer):
    
    
 #CarUser
-class CarUserSerializer(ValidateModelSerializer, serializers.ModelSerializer):
+class CarUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CarUser
@@ -94,51 +94,31 @@ class CarUserSerializer(ValidateModelSerializer, serializers.ModelSerializer):
         
         https://docs.djangoproject.com/en/3.2/topics/class-based-views/generic-editing/#models-and-request-user
         """
-        request = self.context['request']
+        attrs = super().validate(attrs)
         
         #Set the read_only fields values
-        attrs['user_created'] = request.user
-        return super().validate(attrs)
-    
-    
-class CarUser_CarExcluded_Serializer(CarUserSerializer):
+        attrs['user_created'] = self.context['request'].user
+        return attrs
+  
+
+class CarUserValidateModelSerializer(ValidateModelSerializer, CarUserSerializer):
+    pass
+      
+        
+class CarUser_CarExcluded_Serializer(CarUserValidateModelSerializer):
         
     class Meta:
         model = CarUser
         fields = ('pk', 'user', 'number_plate',)
         
 
-class CarUser_CarNested_Serializer(CarUser_CarExcluded_Serializer):
+class CarUser_CarNested_Serializer(NestedValidateModelSerializer, CarUser_CarExcluded_Serializer):
     
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        
-        context = self.context
-        if context.get('car'):
-            return attrs
-        
-        s = CarSerializer(data=attrs.get('car'), context=self.context)
+    def validate_nested(self, request_data, nested_instances) -> dict:
+        s = CarSerializer(data=request_data.get('car'), context=self.context)
         s.is_valid(raise_exception=True)
-        context['car'] = Car(**s.validated_data)
-        
-        return attrs
-    
-    def is_valid(self, raise_exception=False, **kwargs):
-        self.validate(self.initial_data)
-        
-        context = self.context
-        car = context['car']
-        
-        return super().is_valid(raise_exception, car=car, **kwargs)
-    
-    
-    def create(self, validated_data):
-        car = self.context['car']
-        car.save()
-        validated_data['car'] = car
-        
-        return super().create(validated_data)
-
+        nested_instances['car'] = Car(**s.validated_data)
+        return nested_instances
 
 #
 
