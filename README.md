@@ -2,6 +2,13 @@
 A Django project with samples code strictly DRY (DON'T REPEAT YOURSELF)
 
 ## Features
+### SQL Lite 3
+Pre popolated database.
+  + Super Admin Account [Django Admin](http://127.0.0.1:8000/admin/users/user/):
+    +  username: admin
+    +  password: admin (ALL USERS)
+
+
 ### CRUD (Create Retrieve Update Delete)
 CRUD are operations that most project implements.
 [Django Rest Framework](https://www.django-rest-framework.org/) can be used for this purpose, to develop Rest API Endpoint.
