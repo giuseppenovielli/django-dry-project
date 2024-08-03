@@ -49,12 +49,12 @@ class Car(models.Model):
 
 
     def __str__(self):
-        return '{} {}'.format(self.name, self.engine)
+        return '{} - {}'.format(self.name, self.engine)
     
     
 class CarUser(models.Model):
-    car = models.ForeignKey(Car, on_delete=models.CASCADE, verbose_name='Car', related_name='car_user')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, verbose_name='Car', related_name='car_user_car')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User', related_name='car_user_user')
     number_plate = models.CharField(max_length=10, verbose_name='Number plate',
                                     validators=[RegexValidator(regex=r'^[0-9a-zA-Z]*$')],
                                     )
@@ -114,4 +114,4 @@ class CarUser(models.Model):
         
         
     def __str__(self):
-        return '{} {} {}'.format(self.car, self.user, self.number_plate)
+        return '{} - {} - {}'.format(self.car, self.user, self.number_plate)
