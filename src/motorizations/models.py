@@ -98,7 +98,7 @@ class CarUser(models.Model):
         for car_name_char in list(self.car.name.lower()):
             if car_name_char in list(fullname.lower()):
                 return
-        raise ValidationError(_('The name of the car must be included in the user name'))
+        raise ValidationError(_('At least one char of the car name must be included in the user fullname'))
         
 
     #https://stackoverflow.com/questions/61507845/model-clean-vs-model-clean-fields

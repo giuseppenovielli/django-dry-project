@@ -29,25 +29,10 @@ from rest_framework.exceptions import ValidationError
 from drf_writable_nested.mixins import BaseNestedModelSerializer, NestedCreateMixin, NestedUpdateMixin
 
 from utils.python.classes import get_base_classes
-from utils.rest_framework.serializers import ValidateModelSerializer
+from utils.rest_framework.serializers import FullCleanModelSerializer
 
 
-# class ValidateWritableNestedModelSerializer(ValidateModelSerializer):
-#     def is_valid(self, validate_model=True, *args, **kwargs):
-#         print('ValidateWritableNestedModelSerializer is_valid -> {}, validate_model = {}'.format(self.Meta.model, validate_model))
-        
-#         kwargs = {**kwargs, **{'validate_model': validate_model}}
-#         return super().is_valid(*args, **kwargs)
-    
-    
-#     def is_valid_model(self, raise_exception=False, include=None, validate_unique=True, *args, **kwargs):
-#         validate_model = kwargs.pop('validate_model', True)
-#         if validate_model:
-#             return super(ValidateModelSerializer, self).is_valid_model(raise_exception=raise_exception, include=include, validate_unique=validate_unique, *args, **kwargs)
-#         return True
-    
-
-class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModelSerializer):
+class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         ###
@@ -55,7 +40,7 @@ class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModel
         self._reverse_relations = None
         ###
 
-    def is_valid(self, raise_exception=False, include=None, validate_unique=True, *args, **kwargs):
+    def is_valid(self, raise_exception=False, exclude=None, validate_unique=True, extra_include=None, *args, **kwargs):
         is_valid = super(BaseNestedModelSerializer, self).is_valid(raise_exception=raise_exception)
         if not is_valid:
             return is_valid
@@ -77,20 +62,26 @@ class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModel
         #
         
         #Validate model fields
-        include_validate_obj = direct_relations_obj
-        if include and isinstance(include, dict):
-            include_validate_obj.update(include)
+        if not extra_include or not isinstance(extra_include, dict):
+            extra_include = {}
+    
+
+        extra_include.update(direct_relations_obj)
         
-        
-        is_valid = super().is_valid(raise_exception=raise_exception, include=include_validate_obj, validate_unique=validate_unique, *args, **kwargs)
+        #
+
+        is_valid = super().is_valid(raise_exception=raise_exception, 
+                                    exclude=exclude, validate_unique=validate_unique, 
+                                    extra_include=extra_include, 
+                                    *args, **kwargs)
         if not is_valid:
             return is_valid
         
         #
-        
+
         #Partial Instance
         instance = self.Meta.model(**validated_data)
-        for key, value in include_validate_obj.items():
+        for key, value in extra_include.items():
             setattr(instance, key, value)
         
         #
@@ -161,19 +152,19 @@ class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModel
                 )
                 
                 ###
-                include = None
-                if ValidateModelSerializer in get_base_classes(serializer):                    
+                extra_include = None
+                if FullCleanModelSerializer in get_base_classes(serializer):                    
                     #Extract name of related field from related model that is the same as instance
                     for field_item in field.Meta.model._meta.get_fields():
                         if field_item.is_relation and field_item.related_model == self.Meta.model:
-                            if include:
+                            if extra_include:
                                 raise Exception('Model {} has more than one relation with model {}'.format(self.Meta.model, field_item.related_model))
-                            include = {field_item.name : instance}
+                            extra_include = {field_item.name : instance}
                             break
                     
                 try:
-                    if include:
-                        serializer.is_valid(raise_exception=True, include=include)
+                    if extra_include:
+                        serializer.is_valid(raise_exception=True, extra_include=extra_include)
                     else:
                         serializer.is_valid(raise_exception=True)
                         
@@ -224,14 +215,13 @@ class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModel
 
             try:
                 serializer.is_valid(raise_exception=True)
-                
                 ###
                 if save:
                     i = serializer.save(**self._get_save_kwargs(field_name))
                     attrs[field_source] = i
                 else:
-                    i = model_class(serializer.validated_data)
-                    
+                    i = model_class(**serializer.validated_data)
+                
                 direct_relations[field_name] = i
                 ###
                 
@@ -243,7 +233,7 @@ class BaseNestedValidateModelSerializer(ValidateModelSerializer, BaseNestedModel
         ###
     
     
-class NestedCreateModelValidateMixin(NestedCreateMixin, BaseNestedValidateModelSerializer):
+class NestedCreateFullCleanMixin(NestedCreateMixin, BaseNestedFullCleanSerializer):
     
     def create(self, validated_data):
         ###relations, reverse_relations = self._extract_relations(validated_data)###
@@ -257,7 +247,7 @@ class NestedCreateModelValidateMixin(NestedCreateMixin, BaseNestedValidateModelS
         ###
 
         # Create instance
-        instance = super(BaseNestedValidateModelSerializer, self).create(validated_data)
+        instance = super(BaseNestedFullCleanSerializer, self).create(validated_data)
 
         ###
         self.update_or_create_reverse_relations(instance, self._reverse_relations)
@@ -266,7 +256,7 @@ class NestedCreateModelValidateMixin(NestedCreateMixin, BaseNestedValidateModelS
         return instance
     
 
-class NestedUpdateModelValidateMixin(NestedUpdateMixin, BaseNestedValidateModelSerializer):
+class NestedUpdateFullCleanMixin(NestedUpdateMixin, BaseNestedFullCleanSerializer):
     
     def update(self, instance, validated_data):
         ###
@@ -282,7 +272,7 @@ class NestedUpdateModelValidateMixin(NestedUpdateMixin, BaseNestedValidateModelS
         )
 
         # Update instance
-        instance = super(BaseNestedValidateModelSerializer, self).update(
+        instance = super(BaseNestedFullCleanSerializer, self).update(
             instance,
             validated_data,
         )

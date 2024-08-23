@@ -161,3 +161,7 @@ FULLCLEAN_WHITELIST = [
     ('motorizations', 'Engine'),
     'users',
 ]
+
+DRF_FULL_CLEAN = {
+    "DEBUG" : DEBUG
+}
