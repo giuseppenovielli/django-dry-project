@@ -1,13 +1,12 @@
 from rest_framework import serializers
 
-from drf_writable_nested.mixins import UniqueFieldsMixin
-
-from drf_writable_nested_fullclean.serializers import WritableNestedFullCleanSerializer
+from drf_writable_nested_fullclean.serializers import WritableNestedModelSerializer
+from drf_writable_nested_fullclean.mixins import UniqueFieldsMixin
 
 from users.serializers import UserSerializer
 from utils.rest_framework.serializers import FullCleanModelSerializer
 
-from .models import Engine, Car, CarUser
+from .models import Engine, Documentation, Car, CarUser
 
 # Base serializers
 class EngineSerializer(serializers.ModelSerializer): 
@@ -15,8 +14,23 @@ class EngineSerializer(serializers.ModelSerializer):
         model = Engine
         fields = '__all__'
 
-class EngineValidateModelSerializer(FullCleanModelSerializer, EngineSerializer):
+class EngineFullCleanModelSerializer(FullCleanModelSerializer, EngineSerializer):
     pass
+
+#
+
+# Documentation
+class DocumentationSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = Documentation
+        fields = '__all__'
+        
+class DocumentationFullCleanModelSerializer(FullCleanModelSerializer, DocumentationSerializer):
+    pass
+
+#
+
+# Car
 
 class CarSerializer(serializers.ModelSerializer): 
     class Meta:
@@ -28,10 +42,12 @@ class CarSerializer(serializers.ModelSerializer):
         representation['engine'] = EngineSerializer(instance.engine).data
         return representation
     
-class CarValidateModelSerializer(FullCleanModelSerializer, CarSerializer):
+class CarFullCleanModelSerializer(FullCleanModelSerializer, CarSerializer):
     pass
-            
 
+#
+            
+# CarUser
 class CarUserSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -65,29 +81,39 @@ class CarUserSerializer(serializers.ModelSerializer):
         return attrs
   
 
-class CarUserValidateModelSerializer(FullCleanModelSerializer, CarUserSerializer):
+class CarUserFullCleanModelSerializer(FullCleanModelSerializer, CarUserSerializer):
     pass
+
 #
 
+#
 
 # WRITEBLE NESTED SERIALIZER
 
 # Car
-class Car__Engine_WritableNestedSerializer(WritableNestedFullCleanSerializer):
+class Car__Documentation_WritableNestedSerializer(WritableNestedModelSerializer):
+    # Direct ManyToMany relation
+    docs = DocumentationFullCleanModelSerializer(many=True)
+    
+    class Meta:
+        model = Car
+        fields = ('id', 'name', 'engine', 'docs',)
+        
+class Car__Engine_WritableNestedSerializer(WritableNestedModelSerializer):
     # Direct FK relation
-    engine = EngineValidateModelSerializer()
+    engine = EngineFullCleanModelSerializer()
     
     class Meta:
         model = Car
         fields = ('id', 'name', 'engine',)
 
-class CarUser_CarExcluded_Serializer(CarUserValidateModelSerializer):
+class CarUser_CarExcluded_Serializer(UniqueFieldsMixin, CarUserFullCleanModelSerializer):
         
     class Meta:
         model = CarUser
         fields = ('id', 'user', 'number_plate',)
         
-class Car__CarUser_WritableNestedSerializer(WritableNestedFullCleanSerializer):
+class Car__CarUser_WritableNestedSerializer(WritableNestedModelSerializer):
     # Reverse FK relation
     car_user_car = CarUser_CarExcluded_Serializer(many=True)
     
@@ -100,13 +126,30 @@ class Car__CarUser__Engine_WritableNestedSerializer(Car__Engine_WritableNestedSe
         model = Car
         fields = ('id', 'name', 'engine', 'car_user_car',)
 
+
+class Car__Engine__Documentation_WritableNestedSerializer(Car__Engine_WritableNestedSerializer, Car__Documentation_WritableNestedSerializer):
+    class Meta:
+        model = Car
+        fields = ('id', 'name', 'engine', 'docs',)
+        
+        
+class Car__CarUser__Documentation_WritableNestedSerializer(Car__Documentation_WritableNestedSerializer, Car__CarUser_WritableNestedSerializer):
+    class Meta:
+        model = Car
+        fields = ('id', 'name', 'docs', 'car_user_car',)
+        
+class Car__CarUser__Engine__Documentation_WritableNestedSerializer(Car__Engine_WritableNestedSerializer, Car__CarUser_WritableNestedSerializer, Car__Documentation_WritableNestedSerializer):
+    class Meta:
+        model = Car
+        fields = ('id', 'name', 'engine', 'car_user_car', 'docs',)
+
 #
 
 
 # CarUser
-class CarUser__Car_WritableNestedSerializer(WritableNestedFullCleanSerializer, CarUserSerializer):
+class CarUser__Car_WritableNestedSerializer(WritableNestedModelSerializer, CarUserSerializer):
     # Direct FK relation
-    car = CarValidateModelSerializer()
+    car = CarFullCleanModelSerializer()
 
     class Meta:
         model = CarUser

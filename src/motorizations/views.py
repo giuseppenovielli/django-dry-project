@@ -3,12 +3,16 @@ from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Engine, Car, CarUser
-from .serializers import (Car__CarUser__Engine_WritableNestedSerializer, 
+from .serializers import (Car__CarUser__Documentation_WritableNestedSerializer, 
+                          Car__CarUser__Engine_WritableNestedSerializer, 
                           Car__CarUser_WritableNestedSerializer, 
+                          Car__Documentation_WritableNestedSerializer, 
+                          Car__Engine__Documentation_WritableNestedSerializer, 
                           Car__Engine_WritableNestedSerializer, 
                           CarUser__Car__Engine_WritableNestedSerializer, 
                           CarUser__Car_WritableNestedSerializer, 
-                          CarUserValidateModelSerializer, 
+                          Car__CarUser__Engine__Documentation_WritableNestedSerializer,
+                          CarUserFullCleanModelSerializer, 
                           EngineSerializer, 
                           CarSerializer, 
                         )
@@ -30,16 +34,25 @@ class CarViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
         Test with POSTMAN
-
-        curl --location --request PUT 'http://127.0.0.1:8000/motorizations/api/cars/130/' \
+        curl --location 'http://127.0.0.1:8000/motorizations/api/cars/' \
 --header 'Authorization: Token be4126fdd668feda4c4a4c9b7761d5af15c1dee3' \
 --header 'Content-Type: application/json' \
 --data '{
-    "name": "advanced-electric_car",
+    "name": "electric_123456789",
+    "docs" : [
+        {
+            "title" : "title",
+            "body" : "body"
+        }
+    ],
     "engine" : {
         "name" : "advanced-electric_engine"
     },
     "car_user_car" : [
+        {
+            "user" : 1,
+            "number_plate" : "ab123"
+        },
         {
             "user" : 1,
             "number_plate" : "ac123"
@@ -48,42 +61,31 @@ class CarViewSet(viewsets.ModelViewSet):
 }'
         """
         return super().create(request, *args, **kwargs)
-    
-    def update(self, request, *args, **kwargs):
-        """
-        Test with POSTMAN
-        curl --location --request PUT 'http://127.0.0.1:8000/motorizations/api/cars/134/' \
---header 'Authorization: Token be4126fdd668feda4c4a4c9b7761d5af15c1dee3' \
---header 'Content-Type: application/json' \
---data '{
-    "name": "advanced-electric_car",
-    "engine" : {
-        "id" : 30,
-        "name" : "advanced-electric_engine1"
-    },
-    "car_user_car" : [
-        {
-            "id" : 134,
-            "user" : 1,
-            "number_plate" : "ad123"
-        }
-    ]
-}'
-        """
-        return super().update(request, *args, **kwargs)
-    
-    
+
+
     def get_serializer_class(self):
         request_data = self.request.data
         engine = request_data.get('engine')
         car_user_car = request_data.get('car_user_car')
+        docs = request_data.get('docs')
         
-        if car_user_car is not None and engine is not None:
+        if car_user_car is not None and engine is not None and docs is not None:
+            return Car__CarUser__Engine__Documentation_WritableNestedSerializer
+        
+        elif car_user_car is not None and engine is not None:
             return Car__CarUser__Engine_WritableNestedSerializer
+        elif car_user_car is not None and docs is not None:
+            return Car__CarUser__Documentation_WritableNestedSerializer
+        elif engine is not None and docs is not None:
+            return Car__Engine__Documentation_WritableNestedSerializer
+        
         elif engine is not None:
             return Car__Engine_WritableNestedSerializer
         elif car_user_car is not None:
             return Car__CarUser_WritableNestedSerializer
+        elif docs is not None:
+            return Car__Documentation_WritableNestedSerializer
+        
         return CarSerializer
       
     
@@ -102,4 +104,4 @@ class CarUserViewSet(viewsets.ModelViewSet):
                 return CarUser__Car__Engine_WritableNestedSerializer
             else:
                 return CarUser__Car_WritableNestedSerializer
-        return CarUserValidateModelSerializer
+        return CarUserFullCleanModelSerializer

@@ -10,6 +10,10 @@ class Engine_admin(ImportExportModelAdmin):
     search_fields = ['name']
     list_display = ['id', 'name']
 
+@admin.register(Documentation)
+class DocumentationAdmin(ImportExportModelAdmin):
+    search_fields = ['title']
+    list_display = ['id', 'title']
 
 @admin.register(Car)
 class CarAdmin(ImportExportModelAdmin):

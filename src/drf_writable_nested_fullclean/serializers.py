@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from .mixins import  NestedCreateFullCleanMixin, NestedUpdateFullCleanMixin
+from .mixins import  NestedCreateMixin, NestedUpdateMixin
 
 
-class WritableNestedFullCleanSerializer(NestedCreateFullCleanMixin, NestedUpdateFullCleanMixin,
+class WritableNestedModelSerializer(NestedCreateMixin, NestedUpdateMixin,
                                     serializers.ModelSerializer):
     pass

@@ -12,27 +12,47 @@ v0.7.0
 
 TESTED: 
     ForeignKey (direct/reverse)
+    ManyToMany (direct/reverse excluding m2m relations with through model)
     
 NOT TESTED: 
     OneToOne (direct/reverse)
-    ManyToMany (direct/reverse excluding m2m relations with through model)
     GenericRelation (this is always only reverse)
 """
-from collections import OrderedDict
-
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.db.models import ProtectedError
+
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework.exceptions import ValidationError
 
-from drf_writable_nested.mixins import BaseNestedModelSerializer, NestedCreateMixin, NestedUpdateMixin
-
-from utils.python.classes import get_base_classes
+from drf_writable_nested.mixins import (
+    BaseNestedModelSerializer as BedaBaseNestedModelSerializer, 
+    NestedCreateMixin as BedaNestedCreateMixin, 
+    NestedUpdateMixin as BedaNestedUpdateMixin, 
+    UniqueFieldsMixin as BedaUniqueFieldsMixin
+)
 from utils.rest_framework.serializers import FullCleanModelSerializer
+from .utils import get_base_classes
 
 
-class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSerializer):
+# DEBUG
+def print_debug(message):
+    drf_full_clean = getattr(settings, 'DRF_WRITABLE_NESTED_FULLCLEAN', {})
+    if not drf_full_clean.get('DEBUG', False):
+        return
+    print('\nDRF_WRITABLE_NESTED_FULLCLEAN -> {}'.format(message))
+    
+
+def get_is_allowed_partial_instances(serializer_obj):
+    drf_full_clean = getattr(settings, 'DRF_WRITABLE_NESTED_FULLCLEAN', {})
+    
+    allow_partial_instances_serializer_meta = getattr(serializer_obj.Meta, 'allow_partial_instances', None)
+    if isinstance(allow_partial_instances_serializer_meta, bool):
+        return allow_partial_instances_serializer_meta
+    else:
+        return drf_full_clean.get('ALLOW_PARTIAL_INSTANCES', True)
+
+class BaseNestedModelSerializer(FullCleanModelSerializer, BedaBaseNestedModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         ###
@@ -41,14 +61,26 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
         ###
 
     def is_valid(self, raise_exception=False, exclude=None, validate_unique=True, extra_include=None, *args, **kwargs):
-        is_valid = super(BaseNestedModelSerializer, self).is_valid(raise_exception=raise_exception)
+        print_debug('BedaBaseNestedModelSerializer is_valid -> {}'.format(type(self)))
+        is_valid = super(BedaBaseNestedModelSerializer, self).is_valid(raise_exception=raise_exception)
         if not is_valid:
             return is_valid
-    
+
+        print_debug('BaseNestedModelSerializer is_valid -> {}'.format(type(self)))
+        
+        allow_partial_instances = get_is_allowed_partial_instances(self)
+        print_debug('serializer {}'.format(type(self)))
+        print_debug('allow_partial_instances -> {}'.format(allow_partial_instances))
+        
         validated_data = self.validated_data
+        
         relations, reverse_relations = self._extract_relations(validated_data)
+        
         self._relations = relations
+        print_debug('direct relations -> {}'.format(relations))
+        
         self._reverse_relations = reverse_relations
+        print_debug('reverse relations -> {}'.format(reverse_relations))
         
         #
         
@@ -56,7 +88,7 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
         direct_relations_obj = self.update_or_create_direct_relations(
             validated_data,
             relations,
-            save=False
+            not allow_partial_instances
         )
         
         #
@@ -65,8 +97,9 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
         if not extra_include or not isinstance(extra_include, dict):
             extra_include = {}
     
-
-        extra_include.update(direct_relations_obj)
+        # Add to extra include all direct relations (partial instances)
+        if allow_partial_instances:
+            extra_include.update(direct_relations_obj)
         
         #
 
@@ -75,6 +108,12 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
                                     extra_include=extra_include, 
                                     *args, **kwargs)
         if not is_valid:
+            return is_valid
+        
+        #
+        
+        # if not allow_partial_instances not check reverse relations
+        if not allow_partial_instances:
             return is_valid
         
         #
@@ -153,14 +192,17 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
                 
                 ###
                 extra_include = None
-                if FullCleanModelSerializer in get_base_classes(serializer):                    
-                    #Extract name of related field from related model that is the same as instance
-                    for field_item in field.Meta.model._meta.get_fields():
-                        if field_item.is_relation and field_item.related_model == self.Meta.model:
-                            if extra_include:
-                                raise Exception('Model {} has more than one relation with model {}'.format(self.Meta.model, field_item.related_model))
-                            extra_include = {field_item.name : instance}
-                            break
+                if FullCleanModelSerializer in get_base_classes(serializer):
+                    if save_kwargs:
+                        extra_include = save_kwargs
+                    else:                   
+                        #Extract name of related field from related model that is the same as instance
+                        for field_item in field.Meta.model._meta.get_fields():
+                            if field_item.is_relation and field_item.related_model == self.Meta.model:
+                                if extra_include:
+                                    raise Exception('Model {} has more than one relation with model {}'.format(self.Meta.model, field_item.related_model))
+                                extra_include = {field_item.name : instance}
+                                break
                     
                 try:
                     if extra_include:
@@ -217,7 +259,13 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
                 serializer.is_valid(raise_exception=True)
                 ###
                 if save:
-                    i = serializer.save(**self._get_save_kwargs(field_name))
+                    save_kwargs = getattr(self, '_save_kwargs', {})
+                    if save_kwargs:
+                        save_kwargs = self._get_save_kwargs(field_name)
+                    else:
+                        save_kwargs = serializer.validated_data
+                        
+                    i = serializer.save(**save_kwargs)
                     attrs[field_source] = i
                 else:
                     i = model_class(**serializer.validated_data)
@@ -233,21 +281,25 @@ class BaseNestedFullCleanSerializer(FullCleanModelSerializer, BaseNestedModelSer
         ###
     
     
-class NestedCreateFullCleanMixin(NestedCreateMixin, BaseNestedFullCleanSerializer):
+class NestedCreateMixin(BedaNestedCreateMixin, BaseNestedModelSerializer):
     
     def create(self, validated_data):
-        ###relations, reverse_relations = self._extract_relations(validated_data)###
+        print_debug('NestedCreateMixin Create -> {}'.format(self))
+        
+        ###
+        # relations, reverse_relations = self._extract_relations(validated_data)###
 
         # Create or update direct relations (foreign key, one-to-one)
-        ###
-        self.update_or_create_direct_relations(
-            validated_data,
-            self._relations,
-        )
+        allow_partial_instances = get_is_allowed_partial_instances(self)
+        if allow_partial_instances:
+            self.update_or_create_direct_relations(
+                validated_data,
+                self._relations,
+            )
         ###
 
         # Create instance
-        instance = super(BaseNestedFullCleanSerializer, self).create(validated_data)
+        instance = super(BedaBaseNestedModelSerializer, self).create(validated_data)
 
         ###
         self.update_or_create_reverse_relations(instance, self._reverse_relations)
@@ -256,23 +308,28 @@ class NestedCreateFullCleanMixin(NestedCreateMixin, BaseNestedFullCleanSerialize
         return instance
     
 
-class NestedUpdateFullCleanMixin(NestedUpdateMixin, BaseNestedFullCleanSerializer):
+class NestedUpdateMixin(BedaNestedUpdateMixin, BaseNestedModelSerializer):
     
     def update(self, instance, validated_data):
+        print_debug('NestedUpdateMixin Update -> {}'.format(self))
+        
         ###
         # relations, reverse_relations = self._extract_relations(validated_data)
         relations = self._relations
         reverse_relations = self._reverse_relations
+
+        allow_partial_instances = get_is_allowed_partial_instances(self)
+        if allow_partial_instances:
+            # Create or update direct relations (foreign key, one-to-one)
+            self.update_or_create_direct_relations(
+                validated_data,
+                relations,
+            )
         ###
         
-        # Create or update direct relations (foreign key, one-to-one)
-        self.update_or_create_direct_relations(
-            validated_data,
-            relations,
-        )
-
+        
         # Update instance
-        instance = super(BaseNestedFullCleanSerializer, self).update(
+        instance = super(BedaBaseNestedModelSerializer, self).update(
             instance,
             validated_data,
         )
@@ -280,53 +337,16 @@ class NestedUpdateFullCleanMixin(NestedUpdateMixin, BaseNestedFullCleanSerialize
         self.delete_reverse_relations_if_need(instance, reverse_relations)
         instance.refresh_from_db()
         return instance
-        # Reverse `reverse_relations` for correct delete priority
-        reverse_relations = OrderedDict(
-            reversed(list(reverse_relations.items())))
-
-        # Delete instances which is missed in data
-        for field_name, (related_field, field, field_source) in \
-                reverse_relations.items():
-            model_class = field.Meta.model
-
-            related_data = self.get_initial()[field_name]
-            # Expand to array of one item for one-to-one for uniformity
-            if related_field.one_to_one:
-                related_data = [related_data]
-
-            # M2M relation can be as direct or as reverse. For direct relation
-            # we should use reverse relation name
-            if related_field.many_to_many:
-                related_field_lookup = {
-                    related_field.remote_field.name: instance,
-                }
-            elif isinstance(related_field, GenericRelation):
-                related_field_lookup = \
-                    self._get_generic_lookup(instance, related_field)
-            else:
-                related_field_lookup = {
-                    related_field.name: instance,
-                }
-
-            current_ids = self._extract_related_pks(field, related_data)
-
-            try:
-                pks_to_delete = list(
-                    model_class.objects.filter(
-                        **related_field_lookup
-                    ).exclude(
-                        pk__in=current_ids
-                    ).values_list('pk', flat=True)
-                )
-                self.perform_nested_delete_or_update(
-                    pks_to_delete,
-                    model_class,
-                    instance,
-                    related_field,
-                    field_source
-                )
-
-            except ProtectedError as e:
-                instances = e.args[1]
-                self.fail('cannot_delete_protected', instances=", ".join([
-                    str(instance) for instance in instances]))
+    
+    
+class UniqueFieldsMixin(BedaUniqueFieldsMixin):
+    ###
+    def is_valid(self, raise_exception=False, *args, **kwargs):
+        print_debug('BedaUniqueFieldsMixin is_valid -> {}'.format(type(self)))
+        is_valid = super().is_valid(raise_exception, *args, **kwargs)
+        if not is_valid:
+            return is_valid
+        
+        print_debug('UniqueFieldsMixin is_valid -> {}'.format(type(self)))
+        self._validate_unique_fields(self.validated_data)
+    ###

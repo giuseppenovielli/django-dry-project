@@ -1,4 +1,3 @@
-from typing import Collection
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -35,11 +34,24 @@ class Engine(models.Model):
         
     def __str__(self):
         return '{}'.format(self.name)
+  
+class Documentation(models.Model):
+    title = models.CharField(max_length=100, verbose_name='Title')
+    body = models.TextField(verbose_name='Body')
     
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Documentation'
+        verbose_name_plural = 'Documentations'
+
+    def __str__(self):
+        return '{}'.format(self.title)
+      
 class Car(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name', validators=[MinLengthValidator(10)])
     engine = models.ForeignKey(Engine, on_delete=models.CASCADE, verbose_name='Engine')
-
+    docs = models.ManyToManyField(Documentation, verbose_name='Documentation', related_name='car_docs')
+    
     objects = CarManager()
     
     class Meta:
@@ -50,6 +62,7 @@ class Car(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.engine)
+
     
     
 class CarUser(models.Model):
@@ -57,6 +70,7 @@ class CarUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User', related_name='car_user_user')
     number_plate = models.CharField(max_length=10, verbose_name='Number plate',
                                     validators=[RegexValidator(regex=r'^[0-9a-zA-Z]*$')],
+                                    unique=True,
                                     )
     
     user_created = models.ForeignKey(User, on_delete=models.CASCADE, 
@@ -65,7 +79,7 @@ class CarUser(models.Model):
                                      validators=[user_write_authorization_validator, user_is_active_validator])
     datetime_created = models.DateTimeField(default=timezone.now, verbose_name='Datetime')
     
-    #https://docs.djangoproject.com/en/3.2/topics/db/managers/#from-queryset
+    # https://docs.djangoproject.com/en/3.2/topics/db/managers/#from-queryset
     objects = CarUserManager()
     superuser_objects = CarUserSuperUserManager()
     exclude_superuser_objects = CarUserExcludeSuperUserManager()

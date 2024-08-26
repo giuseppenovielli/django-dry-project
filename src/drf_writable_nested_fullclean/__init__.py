@@ -9,7 +9,7 @@ VERSION = __version__
 
 
 from .mixins import (
-    NestedCreateFullCleanMixin,
-    NestedUpdateFullCleanMixin,
+    NestedCreateMixin,
+    NestedUpdateMixin,
 )
-from .serializers import WritableNestedFullCleanSerializer
+from .serializers import WritableNestedModelSerializer
